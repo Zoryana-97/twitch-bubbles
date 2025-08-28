@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Twitch Chat Bubbles</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tmi.js/1.8.5/tmi.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: transparent;
+      font-family: "Comic Sans MS", cursive, sans-serif;
+    }
+
+    .bubble {
+      display: inline-block;
+      max-width: 400px;
+      background: #ffe082;
+      border: 3px solid #000;
+      border-radius: 50px;
+      padding: 15px 20px;
+      margin: 10px;
+      font-size: 20px;
+      color: #000;
+      position: relative;
+      animation: pop-in 0.4s ease, fade-out 0.4s ease 8s forwards;
+      box-shadow: 4px 4px 0 #000;
+    }
+
+    .bubble::after {
+      content: "";
+      position: absolute;
+      bottom: -20px;
+      left: 40px;
+      width: 0;
+      height: 0;
+      border: 20px solid transparent;
+      border-top-color: #ffe082;
+      border-left: none;
+      margin-left: -10px;
+      transform: rotate(20deg);
+      filter: drop-shadow(2px 2px 0 black);
+    }
+
+    @keyframes pop-in {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fade-out {
+      to { opacity: 0; transform: translateY(-30px); }
+    }
+
+    #chat {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat"></div>
+
+  <script>
+    // Беремо назву каналу з параметру URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const channelName = urlParams.get("channel") || "YOUR_CHANNEL_NAME";
+
+    const client = new tmi.Client({
+      channels: [channelName]
+    });
+
+    client.connect();
+
+    client.on('message', (channel, tags, message, self) => {
+      if(self) return;
+
+      const chat = document.getElementById('chat');
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.innerHTML = <b>${tags['display-name']}:</b> ${message};
+      chat.appendChild(bubble);
+
+      setTimeout(() => {
+        bubble.remove();
+      }, 9000);
+    });
+  </script>
+</body>
+</html>
